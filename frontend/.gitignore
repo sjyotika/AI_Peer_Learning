@@ -1,0 +1,57 @@
+<<<<<<< HEAD
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+=======
+# Python virtual environments
+.venv/
+venv/
+
+# Python caches
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Environment variables
+**/.env
+**/.env.*
+!ai-peer-learning/backend/.env.example
+
+# Node
+**/node_modules/
+
+# Build outputs
+**/dist/
+**/build/
+
+# Local data/artifacts
+ai-peer-learning/backend/chroma_store/
+ai-peer-learning/backend/uploads/
+*.sqlite3
+
+# OS/editor noise
+.DS_Store
+.vscode/
+>>>>>>> 583ca9a2e80908b36aba71e3c77443c4f7da3a38
