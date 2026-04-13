@@ -60,33 +60,27 @@ export default function AIPeerPage() {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+    <div className="page-container">
+      <div className="page-header-row">
         <div>
-          <h2 style={{ margin: '0 0 0.25rem 0' }}>Learning Session</h2>
-          <p style={{ color: 'var(--text-light)', margin: 0, fontSize: '0.9rem' }}>Topic: {topic || 'General'}</p>
+          <h2 className="page-title">Learning Session</h2>
+          <p className="page-subtitle">Topic: {topic || 'General'}</p>
         </div>
         <button
           onClick={() => navigate('/report')}
-          style={{
-            backgroundColor: 'var(--danger)', color: 'white', border: 'none',
-            padding: '0.5rem 1.25rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer',
-          }}
+          className="btn-danger"
         >
           End Session
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        {/* Left: Chat */}
-        <div className="card-wrapper" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '600px' }}>
+      <div className="peer-layout">
+        <div className="card-wrapper peer-chat-card">
           <ChatWindow onSessionDone={handleSessionDone} />
         </div>
 
-        {/* Right: Explanation */}
-        <div className="card-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '600px' }}>
-          <h4 style={{ margin: '0 0 1.5rem 0' }}>Your Explanation</h4>
+        <div className="card-wrapper peer-explain-card">
+          <h4 className="peer-section-title">Your Explanation</h4>
 
           {/* Mic button */}
           {!explainSubmitted && (
@@ -129,13 +123,6 @@ export default function AIPeerPage() {
                   <><Mic size={16} /> Start Recording</>
                 )}
               </button>
-
-              <style>{`
-                @keyframes micpulse {
-                  0%, 100% { opacity: 1; transform: scale(1); }
-                  50% { opacity: 0.3; transform: scale(1.4); }
-                }
-              `}</style>
 
               {(voiceError || !isSupported) && (
                 <p style={{ color: '#e53e3e', fontSize: '0.8rem', margin: '0.4rem 0 0 0' }}>

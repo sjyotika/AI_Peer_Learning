@@ -1,8 +1,16 @@
 import axios from 'axios';
 
+function resolveApiBaseUrl() {
+  const envBase = import.meta.env.VITE_API_BASE_URL;
+  if (envBase) {
+    return envBase;
+  }
+
+  return '/api';
+}
+
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: resolveApiBaseUrl(),
 });
 
 // Attach logged-in user's email to every request so the backend
@@ -17,9 +25,7 @@ export function setAuthEmail(email) {
 
 export const api = {
   uploadFile: (formData) =>
-    apiClient.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    apiClient.post('/upload', formData),
 
   submitExplanation: (data) => apiClient.post('/explain', data),
 

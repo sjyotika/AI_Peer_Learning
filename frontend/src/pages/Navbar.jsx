@@ -20,15 +20,14 @@ export default function Navbar() {
       padding: '0 2rem', height: '64px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
-      {/* Brand — goes to dashboard if logged in, otherwise home */}
       <Link
         to={isAuthenticated ? '/dashboard' : '/'}
         style={{
           display: 'flex', alignItems: 'center', gap: '0.5rem',
-          color: 'var(--primary)', fontWeight: 'bold', fontSize: '1.3rem', textDecoration: 'none',
+          color: 'var(--primary)', fontWeight: 800, fontSize: '1.25rem', textDecoration: 'none',
+          letterSpacing: '-0.02em',
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '1.8rem' }}>menu_book</span>
         LearnPeer
       </Link>
 

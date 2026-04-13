@@ -3,9 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/sessionStore';
 import { setAuthEmail } from '../api/client';
 
+const USERS_KEY = 'learnpeer_users';
+
+function loadUsers() {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveUsers(users) {
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch {
+    // Ignore localStorage failures and keep UX responsive.
+  }
+}
+
 export default function SignInPage() {
   const navigate = useNavigate();
-  const { uploadedDocument, setIsAuthenticated } = useSessionStore();
+  const { setIsAuthenticated } = useSessionStore();
   const [isLogin, setIsLogin] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
@@ -19,15 +39,38 @@ export default function SignInPage() {
     if (!isLogin && formData.password !== formData.confirm) { setError('Passwords do not match.'); return; }
     if (formData.password.length < 8) { setError('Password must be at least 8 characters.'); return; }
 
-    const userName = isLogin
-      ? formData.email.split('@')[0]
-      : (formData.name || formData.email.split('@')[0]);
+    const normalizedEmail = formData.email.trim().toLowerCase();
+    const users = loadUsers();
+    let userRecord = users.find((u) => u.email === normalizedEmail);
 
-    const userData = { name: userName, email: formData.email };
+    if (isLogin) {
+      if (!userRecord) {
+        setError("You don't have an account yet. Please sign up first.");
+        return;
+      }
+      if (userRecord.password !== formData.password) {
+        setError('Incorrect password. Please try again.');
+        return;
+      }
+    } else {
+      if (userRecord) {
+        setError('An account with this email already exists. Please sign in.');
+        return;
+      }
+
+      userRecord = {
+        name: (formData.name || normalizedEmail.split('@')[0]).trim(),
+        email: normalizedEmail,
+        password: formData.password,
+      };
+      saveUsers([...users, userRecord]);
+    }
+
+    const userData = { name: userRecord.name, email: userRecord.email };
     setIsAuthenticated(true, userData);
 
     // Set email on axios so all future requests are tagged
-    setAuthEmail(formData.email);
+    setAuthEmail(userRecord.email);
 
     // Always go to dashboard after sign-in
     navigate('/dashboard');
@@ -51,9 +94,9 @@ export default function SignInPage() {
         backgroundColor: 'var(--primary-light, #ece9ff)', color: 'var(--primary)',
         width: '48px', height: '48px', borderRadius: '50%',
         display: 'flex', justifyContent: 'center', alignItems: 'center',
-        marginBottom: '1.5rem', fontSize: '1.5rem',
+        marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 800,
       }}>
-        <span className="material-symbols-outlined">menu_book</span>
+        LP
       </div>
 
       <h2 style={{ margin: '0 0 0.5rem 0', textAlign: 'center' }}>

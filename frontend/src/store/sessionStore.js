@@ -5,7 +5,6 @@
  */
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 const AUTH_KEY = 'learnpeer_auth';
 

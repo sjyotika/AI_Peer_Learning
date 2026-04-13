@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSessionStore } from '../store/sessionStore';
 import RadarChart from '../components/RadarChart';
 import GapList from '../components/GapList';
 import { api } from '../api/client';
@@ -15,7 +14,6 @@ const TABS = [
 export default function SessionDetailPage() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { user, setSessionId, setTopic, clearChatHistory } = useSessionStore();
 
   const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,26 +68,21 @@ export default function SessionDetailPage() {
   };
 
   return (
-    <div style={{ maxWidth: '900px', width: '100%', margin: '0 auto', padding: '0 1rem 4rem 1rem' }}>
+    <div className="page-container session-detail-page">
 
       {/* Back button + title */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '2rem' }}>
+      <div className="page-header-row" style={{ alignItems: 'flex-start' }}>
         <button
           onClick={() => navigate('/dashboard')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '0.5rem 1rem', border: '1px solid var(--border)',
-            borderRadius: '6px', background: 'transparent',
-            cursor: 'pointer', fontSize: '0.9rem', flexShrink: 0,
-          }}
+          className="btn-ghost"
         >
           <ArrowLeft size={16} /> Back
         </button>
         <div>
-          <h2 style={{ margin: '0 0 0.2rem 0' }}>
+          <h2 className="page-title" style={{ marginBottom: '0.2rem' }}>
             {session.topic || session.original_filename || 'Session'}
           </h2>
-          <p style={{ margin: 0, color: 'var(--text-light)', fontSize: '0.85rem' }}>
+          <p className="page-subtitle" style={{ margin: 0 }}>
             {formatDate(session.updated_at)}
           </p>
         </div>
@@ -97,10 +90,7 @@ export default function SessionDetailPage() {
 
       {/* Overall score banner */}
       {report && (
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1rem', marginBottom: '2rem',
-        }}>
+        <div className="report-stats-grid" style={{ marginBottom: '2rem' }}>
           <ScorePill label="Overall Score" value={`${overall}%`} color="var(--primary)" />
           <ScorePill label="Coverage" value={`${coverage}%`} color="var(--primary)" />
           <ScorePill label="Accuracy" value={`${accuracy}%`} color="#b11685" />
@@ -108,28 +98,12 @@ export default function SessionDetailPage() {
       )}
 
       {/* Tabs */}
-      <div style={{
-        display: 'flex', gap: '0.25rem',
-        borderBottom: '2px solid var(--border)',
-        marginBottom: '2rem',
-      }}>
+      <div className="tabbar" style={{ marginBottom: '2rem' }}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '0.65rem 1.25rem',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid var(--primary)' : '2px solid transparent',
-              marginBottom: '-2px',
-              background: 'transparent',
-              color: activeTab === tab.id ? 'var(--primary)' : 'var(--text-light)',
-              fontWeight: activeTab === tab.id ? 700 : 400,
-              cursor: 'pointer',
-              fontSize: '0.95rem',
-              transition: 'color 0.15s',
-            }}
+            className={`tabbar__item ${activeTab === tab.id ? 'is-active' : ''}`}
           >
             {tab.icon} {tab.label}
           </button>
@@ -182,18 +156,7 @@ export default function SessionDetailPage() {
             conversation.map((msg, idx) => (
               <div
                 key={idx}
-                style={{
-                  alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '75%',
-                  backgroundColor: msg.role === 'user' ? 'var(--primary)' : '#f3f4f6',
-                  color: msg.role === 'user' ? '#fff' : 'var(--text-dark)',
-                  padding: '0.875rem 1.125rem',
-                  borderRadius: '12px',
-                  borderBottomRightRadius: msg.role === 'user' ? '4px' : '12px',
-                  borderBottomLeftRadius: msg.role === 'assistant' ? '4px' : '12px',
-                  lineHeight: 1.6,
-                  fontSize: '0.95rem',
-                }}
+                className={`chat-window__bubble ${msg.role === 'user' ? 'is-user' : 'is-ai'}`}
               >
                 <div style={{ fontSize: '0.7rem', opacity: 0.65, marginBottom: '0.3rem',
                   textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -221,7 +184,7 @@ export default function SessionDetailPage() {
               </div>
 
               {/* Scores */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+              <div className="report-stats-grid">
                 <MiniScoreCard label="Coverage" value={coverage} color="var(--primary)" />
                 <MiniScoreCard label="Accuracy" value={accuracy} color="#b11685" />
                 <div className="card-wrapper" style={{ padding: '1.25rem' }}>

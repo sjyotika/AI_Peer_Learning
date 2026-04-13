@@ -50,7 +50,7 @@ export default function ReportPage() {
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: '600px', width: '100%', margin: '4rem auto', textAlign: 'center', color: 'var(--text-light)' }}>
+      <div className="page-container page-state">
         <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
         <h3>Generating your evaluation report…</h3>
         <p>This may take a few seconds while we analyse your explanation.</p>
@@ -60,7 +60,7 @@ export default function ReportPage() {
 
   if (error) {
     return (
-      <div style={{ maxWidth: '600px', width: '100%', margin: '4rem auto', textAlign: 'center', color: '#e53e3e' }}>
+      <div className="page-container page-state" style={{ color: '#e53e3e' }}>
         <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⚠</div>
         <h3>Could not load report</h3>
         <p>{error}</p>
@@ -69,16 +69,10 @@ export default function ReportPage() {
   }
 
   return (
-    <div style={{ maxWidth: '600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="page-container report-page">
 
       {/* Hero Header */}
-      <div style={{
-        backgroundColor: 'var(--primary)',
-        color: '#fff',
-        padding: '2rem',
-        borderRadius: '16px',
-        textAlign: 'center',
-      }}>
+      <div className="report-hero">
         <div style={{ fontSize: '0.7rem', letterSpacing: '1px', opacity: 0.8, marginBottom: '1rem', textTransform: 'uppercase' }}>
           Evaluation Report
         </div>
@@ -108,7 +102,7 @@ export default function ReportPage() {
       </div>
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+      <div className="report-stats-grid">
         <div className="card-wrapper" style={{ padding: '1.5rem 1rem' }}>
           <h5 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-light)', fontSize: '0.7rem' }}>COVERAGE SCORE</h5>
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>{coverage}%</div>
@@ -176,12 +170,12 @@ export default function ReportPage() {
       )}
 
       {/* Gap Detection */}
-      <div>
+      <div className="card-wrapper">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
           <span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>tips_and_updates</span>
           Gap Detection
         </h3>
-        <p style={{ color: 'var(--text-light)' }}>
+        <p style={{ color: 'var(--text-light)', marginTop: 0 }}>
           Specific technical areas missing from your response compared to the uploaded material.
         </p>
         <GapList gaps={reportData?.gaps || []} />

@@ -1,0 +1,28 @@
+# Backend secrets
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Python env and caches
+backend/.venv/
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Node
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+frontend/build/
+
+# Local runtime data
+backend/chroma_store/
+backend/uploads/
+*.sqlite3
+
+# Editor/OS
+.DS_Store
+.vscode/
+.idea/

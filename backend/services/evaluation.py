@@ -2,9 +2,16 @@
 
 import json
 import os
+import re
+from pathlib import Path
 
 import google.generativeai as genai
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer, util
+
+
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(dotenv_path=BASE_DIR.parent / ".env", override=False)
 
 
 _embed_model = None
@@ -93,28 +100,62 @@ The JSON must have exactly this structure:
 Rules:
 - accuracy_pct: how accurate/correct was the student's understanding (0-100)
 - misconceptions: specific wrong ideas the student showed (empty array [] if none)
-- suggestions: concrete things to study or review to improve"""
+- suggestions: concrete things to study or review to improve
+- Do NOT over-penalize isolated mistakes. If understanding is mostly correct and only one minor sentence is wrong, accuracy should usually stay >= 70."""
 
     if gemini is None:
-        return {"accuracy_pct": 50.0, "misconceptions": [], "suggestions": ["Review the material again carefully."]}
+        return {}
+
+    def _extract_json_blob(raw_text: str) -> str:
+        text = raw_text.strip()
+        text = text.replace("```json", "").replace("```", "").strip()
+        start = text.find("{")
+        end = text.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            return text
+        return text[start:end + 1]
 
     raw = ""
     try:
         response = gemini.generate_content(eval_prompt)
         raw = (response.text or "").strip()
-        raw = raw.replace("```json", "").replace("```", "").strip()
-        result = json.loads(raw)
+        result = json.loads(_extract_json_blob(raw))
         return {
             "accuracy_pct": float(result.get("accuracy_pct", 50)),
-            "misconceptions": result.get("misconceptions", []),
-            "suggestions": result.get("suggestions", []),
+            "misconceptions": [str(x) for x in result.get("misconceptions", []) if str(x).strip()],
+            "suggestions": [str(x) for x in result.get("suggestions", []) if str(x).strip()],
         }
     except json.JSONDecodeError as e:
         print(f"[Evaluation] JSON parse error: {e}\nRaw: {raw[:300]}")
-        return {"accuracy_pct": 50.0, "misconceptions": [], "suggestions": ["Review the material again carefully."]}
+        return {}
     except Exception as e:
         print(f"[Evaluation] Gemini error: {e}")
-        return {"accuracy_pct": 50.0, "misconceptions": [], "suggestions": ["Review the material again carefully."]}
+        return {}
+
+
+def _heuristic_accuracy(
+    coverage_pct: float,
+    student_explanation: str,
+    conversation_history: list,
+    misconceptions: list[str],
+) -> float:
+    all_user_text = student_explanation + " " + " ".join(
+        [m.get("content", "") for m in conversation_history if m.get("role") == "user"]
+    )
+    word_count = len(re.findall(r"[a-zA-Z]+", all_user_text))
+    sentence_count = len([s for s in re.split(r"[.!?]+", all_user_text) if s.strip()])
+
+    # Base from coverage with mild structure bonus.
+    accuracy = 40.0 + 0.55 * coverage_pct
+    if word_count >= 120:
+        accuracy += 6
+    if sentence_count >= 5:
+        accuracy += 4
+
+    # Penalize misconceptions, but avoid extreme drops for one small issue.
+    accuracy -= min(len(misconceptions) * 8, 24)
+
+    return max(0.0, min(100.0, accuracy))
 
 
 def evaluate_understanding(
@@ -137,15 +178,33 @@ def evaluate_understanding(
     coverage_pct, covered, missing = compute_coverage(keywords, student_all_text)
     ai_eval = evaluate_with_gemini(original_text, student_explanation, conversation_history, topic)
 
+    misconceptions = ai_eval.get("misconceptions", [])
+    suggestions = ai_eval.get("suggestions", [])
+
+    heuristic_acc = _heuristic_accuracy(
+        coverage_pct=coverage_pct,
+        student_explanation=student_explanation,
+        conversation_history=conversation_history,
+        misconceptions=misconceptions,
+    )
+
+    if "accuracy_pct" in ai_eval:
+        # Blend model judgment with measurable coverage/structure signal for stability.
+        accuracy_pct = round(0.7 * float(ai_eval["accuracy_pct"]) + 0.3 * heuristic_acc, 1)
+    else:
+        accuracy_pct = round(heuristic_acc, 1)
+        if not suggestions:
+            suggestions = ["Review unclear concepts and add one real-world example for each key idea."]
+
     recall_score = (len(covered) / max(len(keywords), 1)) * 100
     depth_score = min(coverage_pct * 0.9, 100)
-    clarity_score = min(ai_eval["accuracy_pct"] * 0.85, 100)
+    clarity_score = min(accuracy_pct * 0.9, 100)
 
     radar_data = {
         "labels": ["Coverage", "Accuracy", "Depth", "Clarity", "Recall"],
         "scores": [
             round(coverage_pct, 1),
-            round(ai_eval["accuracy_pct"], 1),
+            round(accuracy_pct, 1),
             round(depth_score, 1),
             round(clarity_score, 1),
             round(recall_score, 1),
@@ -154,9 +213,9 @@ def evaluate_understanding(
 
     return {
         "coverage_pct": coverage_pct,
-        "accuracy_pct": ai_eval["accuracy_pct"],
+        "accuracy_pct": accuracy_pct,
         "gaps": missing,
-        "misconceptions": ai_eval["misconceptions"],
-        "suggestions": ai_eval["suggestions"],
+        "misconceptions": misconceptions,
+        "suggestions": suggestions,
         "radar_data": radar_data,
     }

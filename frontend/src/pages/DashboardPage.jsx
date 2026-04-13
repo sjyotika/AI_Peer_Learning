@@ -55,21 +55,17 @@ export default function DashboardPage() {
   };
 
   return (
-    <div style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '0 1rem' }}>
-
-      {/* Welcome header */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ margin: '0 0 0.25rem 0', fontSize: '1.8rem' }}>
-          Welcome back, {user?.name || 'Student'} 👋
-        </h2>
-        <p style={{ color: 'var(--text-light)', margin: 0 }}>
+    <div className="page-container dashboard-page">
+      <div className="page-header-block">
+        <h2 className="page-title">Welcome back, {user?.name || 'Student'}</h2>
+        <p className="page-subtitle">
           Here are all your past learning sessions.
         </p>
       </div>
 
       {/* Stats row */}
       {!isLoading && sessions.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2.5rem' }}>
+        <div className="dashboard-stats-grid">
           <StatCard
             icon={<Layers size={20} />}
             label="Total Sessions"
@@ -100,8 +96,8 @@ export default function DashboardPage() {
       )}
 
       {/* Session list */}
-      <div style={{ marginBottom: '6rem' /* space for FAB */ }}>
-        <h3 style={{ marginBottom: '1.25rem', fontSize: '1.1rem' }}>Your Sessions</h3>
+      <div className="dashboard-list-wrap">
+        <h3 className="dashboard-list-title">Your Sessions</h3>
 
         {isLoading && (
           <div style={{ color: 'var(--text-light)', padding: '3rem', textAlign: 'center' }}>
@@ -114,11 +110,7 @@ export default function DashboardPage() {
         )}
 
         {!isLoading && !error && sessions.length === 0 && (
-          <div style={{
-            textAlign: 'center', padding: '4rem 2rem',
-            border: '2px dashed var(--border)', borderRadius: '12px',
-            color: 'var(--text-light)',
-          }}>
+          <div className="dashboard-empty">
             <BookOpen size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
             <h4 style={{ margin: '0 0 0.5rem 0' }}>No sessions yet</h4>
             <p style={{ margin: 0, fontSize: '0.9rem' }}>
@@ -136,26 +128,7 @@ export default function DashboardPage() {
             <div
               key={session.session_id}
               onClick={() => handleOpenSession(session.session_id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1.25rem',
-                padding: '1.25rem 1.5rem',
-                backgroundColor: '#fff',
-                border: '1px solid var(--border)',
-                borderRadius: '12px',
-                marginBottom: '0.875rem',
-                cursor: 'pointer',
-                transition: 'box-shadow 0.15s, border-color 0.15s',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
-                e.currentTarget.style.borderColor = 'var(--primary)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = 'var(--border)';
-              }}
+              className="dashboard-session-card"
             >
               {/* Icon */}
               <div style={{
@@ -220,33 +193,7 @@ export default function DashboardPage() {
       {/* Floating Action Button */}
       <button
         onClick={handleStartNew}
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '2rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.875rem 1.5rem',
-          backgroundColor: 'var(--primary)',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '50px',
-          fontWeight: 700,
-          fontSize: '1rem',
-          cursor: 'pointer',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
-          zIndex: 200,
-          transition: 'transform 0.15s, box-shadow 0.15s',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.22)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.18)';
-        }}
+        className="fab-primary"
       >
         <Plus size={20} /> Start New Session
       </button>

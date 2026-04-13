@@ -18,6 +18,14 @@ def _plan_max_doubts(explanation_text: str, keywords: list[str]) -> int:
     """
     text = explanation_text.lower()
     tokens = set(re.findall(r"[a-zA-Z]{4,}", text))
+    words = re.findall(r"[a-zA-Z]+", explanation_text)
+    word_count = len(words)
+    sentence_count = len([s for s in re.split(r"[.!?]+", explanation_text) if s.strip()])
+
+    hedge_markers = [
+        "i think", "maybe", "probably", "not sure", "kind of", "sort of", "etc",
+    ]
+    hedge_hits = sum(1 for marker in hedge_markers if marker in text)
 
     check_keywords = keywords[:10] if keywords else []
     hits = 0
@@ -29,20 +37,23 @@ def _plan_max_doubts(explanation_text: str, keywords: list[str]) -> int:
     coverage = hits / max(len(check_keywords), 1)
     length = len(explanation_text)
 
-    # Excellent explanation: skip Q&A and go directly to report.
-    if (coverage >= 0.60 and length >= 320) or length >= 900:
-        return 0
+    # Weak explanation: likely incomplete.
+    if word_count < 60 or coverage < 0.30:
+        return 3
 
-    # Good explanation: keep Q&A short.
-    if coverage >= 0.55 and length >= 260:
-        return 1
-
-    # Moderate explanation: ask two doubts.
-    if coverage >= 0.35 or length >= 180:
+    # Moderate explanation: needs both clarification and deeper follow-up.
+    if word_count < 65 or coverage < 0.50:
         return 2
 
-    # Weak/short explanation: ask at most three doubts.
-    return 3
+    # Good explanation with minor uncertainty/gaps.
+    if hedge_hits >= 2 or sentence_count < 4 or word_count < 100 or coverage < 0.70:
+        return 1
+
+    # Excellent explanation: skip Q&A and go directly to report.
+    if (coverage >= 0.75 and length >= 300 and sentence_count >= 4 and hedge_hits == 0) or length >= 950:
+        return 0
+
+    return 1
 
 
 @router.post("/explain", response_model=ExplainResponse)

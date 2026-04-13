@@ -49,30 +49,15 @@ export default function ChatWindow({ onSessionDone }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
-      <div style={{
-        padding: '1rem',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-      }}>
+    <div className="chat-window">
+      <div className="chat-window__header">
         <span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>psychology</span>
         <h4 style={{ margin: 0 }}>AI Peer Questions</h4>
       </div>
 
-      {/* Messages */}
-      <div style={{
-        flex: 1,
-        padding: '1.5rem',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-      }}>
+      <div className="chat-window__messages">
         {chatHistory.length === 0 && (
-          <p style={{ color: 'var(--text-light)', textAlign: 'center', marginTop: '2rem' }}>
+          <p className="chat-window__empty">
             Submit your explanation to start the Q&amp;A session.
           </p>
         )}
@@ -80,31 +65,14 @@ export default function ChatWindow({ onSessionDone }) {
         {chatHistory.map((msg, idx) => (
           <div
             key={idx}
-            style={{
-              alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '80%',
-              backgroundColor: msg.role === 'user' ? 'var(--primary)' : 'var(--bg-primary)',
-              color: msg.role === 'user' ? '#fff' : 'var(--text-dark)',
-              padding: '1rem',
-              borderRadius: '12px',
-              borderBottomRightRadius: msg.role === 'user' ? '4px' : '12px',
-              borderBottomLeftRadius: msg.role === 'assistant' ? '4px' : '12px',
-            }}
+            className={`chat-window__bubble ${msg.role === 'user' ? 'is-user' : 'is-ai'}`}
           >
             {msg.content}
           </div>
         ))}
 
         {isLoading && (
-          <div style={{
-            alignSelf: 'flex-start',
-            backgroundColor: 'var(--bg-primary)',
-            padding: '0.75rem 1rem',
-            borderRadius: '12px',
-            borderBottomLeftRadius: '4px',
-            color: 'var(--text-light)',
-            fontSize: '0.9rem',
-          }}>
+          <div className="chat-window__thinking">
             Thinking…
           </div>
         )}
@@ -112,8 +80,7 @@ export default function ChatWindow({ onSessionDone }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.5rem' }}>
+      <div className="chat-window__input">
         <input
           type="text"
           value={input}
@@ -121,20 +88,14 @@ export default function ChatWindow({ onSessionDone }) {
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Reply to your peer…"
           disabled={isLoading}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            borderRadius: '4px',
-            border: '1px solid var(--border)',
-            outline: 'none',
-            opacity: isLoading ? 0.6 : 1,
-          }}
+          className="chat-window__text-input"
+          style={{ opacity: isLoading ? 0.6 : 1 }}
         />
         <button
           className="btn-primary"
           onClick={handleSend}
           disabled={isLoading}
-          style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px' }}
         >
           <Send size={18} />
         </button>
